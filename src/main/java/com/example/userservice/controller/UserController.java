@@ -4,10 +4,13 @@ import com.example.userservice.dto.UserDto;
 import com.example.userservice.service.UserService;
 import com.example.userservice.vo.Greeting;
 import com.example.userservice.vo.RequestUser;
+import com.example.userservice.vo.ResponseUser;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -49,13 +52,18 @@ public class UserController {
      * 회원가입
      */
     @PostMapping("/users")
-    public String createUser(@RequestBody RequestUser user){
+    public ResponseEntity<ResponseUser> createUser(@RequestBody RequestUser user){
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
         UserDto userDto = mapper.map(user, UserDto.class);
         userService.createUser(userDto);
 
-        return "Create User method is called";
+        ResponseUser responseUser = mapper.map(userDto, ResponseUser.class);
+
+//        return new ResponseEntity(HttpStatus.CREATED);  post에 의해서 정상적으로 데이터가 반영이 되었을 떄는 '200 ok' 보다 '201 created' 라는 코드를 반환시키는게 더 알맞음
+
+        // 회원가입 완료 시 회원가입된 정보도 반환하기 위함
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseUser);
     }
 }
