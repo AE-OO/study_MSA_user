@@ -1,64 +1,57 @@
 package com.example.userservice.security;
 
 import com.example.userservice.service.UserService;
-import jakarta.servlet.Filter;
-import org.hibernate.cfg.Environment;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+
 
 @Configuration // 다른 쪽의 bean들보다 우선순위를 앞에 두고 등록함
 @EnableWebSecurity
-public class WebSecurity{
-
+public class WebSecurity extends WebSecurityConfigurerAdapter {
     private UserService userService;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private Environment env;
 
-    public WebSecurity(UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder, Environment env){
+    public WebSecurity(Environment env, UserService userService, BCryptPasswordEncoder bCryptPasswordEncoder) {
+        this.env = env;
         this.userService = userService;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.env = env;
     }
 
     /**
      * 권한 처리를 위한 config
      */
-    @Bean
-    protected SecurityFilterChain configure(HttpSecurity http, HandlerMappingIntrospector introspector) throws Exception {
-        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
-        return http.csrf(csrf -> csrf.disable())
-                .headers(authorize -> authorize.frameOptions(frameOptions -> frameOptions.disable()))
-                .authorizeRequests(authorize -> {
-                    try {
-                        authorize.requestMatchers(mvcMatcherBuilder.pattern("/**"))
-                                .hasIpAddress("192.168.0.8").and()
-                                .addFilter(getAuthenticationFilter(http));
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .getOrBuild();
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
+//        http.authorizeRequests().antMatchers("/users/**").permitAll();
+        http.authorizeRequests().antMatchers("/**")    // 모든 주소에 대해서 통과시키지 않음
+                .hasIpAddress("127.0.0.1")  // ip를 제한적으로 받음
+                .and()
+                .addFilter(getAuthenticationFilter()); // 해당 필터를 통과시킨 데이터에 대해서만 권한을 부여하고 작업을 진행함
+
+
+        http.headers().frameOptions().disable();
     }
 
-    private AuthenticationFilter getAuthenticationFilter(HttpSecurity http) throws Exception {
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(http.getSharedObject(AuthenticationConfiguration.class).getAuthenticationManager());
+    private AuthenticationFilter getAuthenticationFilter() throws Exception {
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter(authenticationManager(), userService, env);
+        authenticationFilter.setAuthenticationManager(authenticationManager());
+
         return authenticationFilter;
     }
 
     /**
      * 인증처리를 위한 config
      */
-    @Bean
+    @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception{
         auth.userDetailsService(userService) // userDetailsService() : 사용자가 전달했던 username(email)과 pwd로 로그인 처리를 함
                 .passwordEncoder(bCryptPasswordEncoder); // DB의 pwd는 암호화되어 있으니까 사용자한테 받아온 pwd도 암호화처리해서 비교함
