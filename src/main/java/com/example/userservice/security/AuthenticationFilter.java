@@ -4,6 +4,9 @@ import com.example.userservice.dto.UserDto;
 import com.example.userservice.service.UserService;
 import com.example.userservice.vo.RequestLogin;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.JwtBuilder;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * 사용자가 로그인하면 가장 먼저 실행되는 클래스
@@ -65,5 +69,19 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication authResult) throws IOException, ServletException {
         String userName = ((User) authResult.getPrincipal()).getUsername();
         UserDto userDetails = userService.getUserDetailsByEmail(userName);
+
+        // 토큰 생성
+        String token = Jwts.builder()
+                .setSubject(userDetails.getUserId())
+                .setExpiration(new Date(System.currentTimeMillis() +
+                        Long.parseLong(env.getProperty("token.expiration_time")))) // 현재 시간과 env의 토큰 만료시간을 더해서 언제 토큰이 만료될지도 토큰에 포함함
+                .signWith(SignatureAlgorithm.HS512, env.getProperty("token.secret")) // 암호화
+                .compact();
+
+        // 만들어진 토큰을 헤더에 담음
+        response.addHeader("token", token);
+
+        // 중간에 토큰이 변경되지 않음을 확인하기 위한 userId
+        response.addHeader("userId", userDetails.getUserId());
     }
 }
