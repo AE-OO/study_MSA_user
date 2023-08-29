@@ -1,5 +1,6 @@
 package com.example.userservice.security;
 
+import com.example.userservice.dto.UserDto;
 import com.example.userservice.service.UserService;
 import com.example.userservice.vo.RequestLogin;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,9 +27,13 @@ import java.util.ArrayList;
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private UserService userService;
-    private Environment env;
+    private Environment env; // 토큰의 만료기간, 토큰의 키워드 등을 yml 파일에 저장해 가져오기 위함
 
-    public AuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, Environment env) {
+    public AuthenticationFilter(AuthenticationManager authenticationManager,
+                                UserService userService, Environment env) {
+        super.setAuthenticationManager(authenticationManager);
+        this.userService = userService;
+        this.env = env;
     }
 
     @Override
@@ -58,6 +63,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
-        String username = ((User) authResult.getPrincipal()).getUsername();
+        String userName = ((User) authResult.getPrincipal()).getUsername();
+        UserDto userDetails = userService.getUserDetailsByEmail(userName);
     }
 }
