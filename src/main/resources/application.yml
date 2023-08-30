@@ -30,8 +30,14 @@ logging:
   level:
     com.example.userservice: DEBUG # userservice의 로그 레벨을 debug로 설정
 
-# 토큰정보
-token:
-  expiration_time: 86400000 # 60s * 60m * 24H * 1000
-  secret: user_token # 이 정보가 만들고자 하는 플랜텍스트의 조합이 되어서 특수한 토큰이 만들어질때 사용됨
 
+# 토큰정보
+#token:
+#  expiration_time: 86400000 # 60s * 60m * 24H * 1000
+#  secret: user_token # 이 정보가 만들고자 하는 플랜텍스트의 조합이 되어서 특수한 토큰이 만들어질때 사용됨
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans
