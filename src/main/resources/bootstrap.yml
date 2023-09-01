@@ -3,7 +3,7 @@ spring:
   cloud:
     config:
       uri: http://127.0.0.1:8888
-      name: config-service
+      name: user-service
 #      name: ecommerce # 읽어오고자 하는 정보
 #  profiles:
 #    active: dev
