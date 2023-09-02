@@ -1,9 +1,11 @@
 package com.example.userservice.service;
 
+import com.example.userservice.client.OrderServiceClient;
 import com.example.userservice.dto.UserDto;
 import com.example.userservice.jpa.UserEntity;
 import com.example.userservice.jpa.UserRepository;
 import com.example.userservice.vo.ResponseOrder;
+import org.aspectj.weaver.ast.Or;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ public class UserServiceImpl implements UserService{
     BCryptPasswordEncoder passwordEncoder;  // 비밀번호 암호화를 위함
     Environment env;
     RestTemplate restTemplate;
+    OrderServiceClient orderServiceClient;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -44,11 +47,13 @@ public class UserServiceImpl implements UserService{
     public UserServiceImpl(UserRepository userRepository,
                            BCryptPasswordEncoder passwordEncoder,
                            Environment env,
-                           RestTemplate restTemplate) {
+                           RestTemplate restTemplate,
+                           OrderServiceClient orderServiceClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.env = env;
         this.restTemplate = restTemplate;
+        this.orderServiceClient = orderServiceClient;
     }
 
     @Override
@@ -88,13 +93,17 @@ public class UserServiceImpl implements UserService{
 //        List<ResponseOrder> orders = new ArrayList<>();
 
         // Rest Template을 사용해서 order 정보 가져오기
-        String orderUrl = String.format(env.getProperty("order-service.url"), userId);
-        ResponseEntity<List<ResponseOrder>> orderListResponse =
-                restTemplate.exchange(orderUrl, HttpMethod.GET, null,
-                        new ParameterizedTypeReference<List<ResponseOrder>>() {
-        });
+//        String orderUrl = String.format(env.getProperty("order-service.url"), userId);
+//        ResponseEntity<List<ResponseOrder>> orderListResponse =
+//                restTemplate.exchange(orderUrl, HttpMethod.GET, null,
+//                        new ParameterizedTypeReference<List<ResponseOrder>>() {
+//        });
+//
+//        List<ResponseOrder> ordersList = orderListResponse.getBody();
 
-        List<ResponseOrder> ordersList = orderListResponse.getBody();
+        // Feign Client를 사용해서 order 정보 가져오기
+        List<ResponseOrder> ordersList = orderServiceClient.getOrders(userId);
+
         userDto.setOrders(ordersList);
 
         return userDto;
