@@ -3,10 +3,12 @@ package com.example.userservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -28,5 +30,12 @@ public class UserServiceApplication {
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
+    }
+
+    @Bean
+    @LoadBalanced  // url을 호출해 올 때 load balancer에 등록된 이름으로 호출해 올 수 있음
+    // ex) 127.0.0.1:8000/order-service/orders => order-service/order-serivce/orders
+    public RestTemplate getRestTemplate(){
+        return new RestTemplate();
     }
 }
