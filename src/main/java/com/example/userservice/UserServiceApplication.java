@@ -1,5 +1,6 @@
 package com.example.userservice;
 
+import com.example.userservice.error.FeignErrorDecoder;
 import feign.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -47,4 +48,9 @@ public class UserServiceApplication {
     public Logger.Level feignLoggerLevel(){ // feign client가 호출되었을 때 로그를 남기기 위함
         return Logger.Level.FULL;
     }
+
+//    @Bean
+//    public FeignErrorDecoder feignErrorDecoder(){
+//        return new FeignErrorDecoder();
+//    }
 }
