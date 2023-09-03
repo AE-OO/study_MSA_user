@@ -34,7 +34,7 @@ greeting:
 
 logging:
   level:
-    com.example.userservice: DEBUG # userservice의 로그 레벨을 debug로 설정
+    com.example.userservice.client: DEBUG # userservice의 로그 레벨을 debug로 설정
 
 
 # 토큰정보

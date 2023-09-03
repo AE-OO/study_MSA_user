@@ -1,5 +1,6 @@
 package com.example.userservice;
 
+import feign.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -10,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.client.RestTemplate;
+
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -39,5 +41,10 @@ public class UserServiceApplication {
     // ex) 127.0.0.1:8000/order-service/orders => order-service/order-serivce/orders
     public RestTemplate getRestTemplate(){
         return new RestTemplate();
+    }
+
+    @Bean
+    public Logger.Level feignLoggerLevel(){ // feign client가 호출되었을 때 로그를 남기기 위함
+        return Logger.Level.FULL;
     }
 }
