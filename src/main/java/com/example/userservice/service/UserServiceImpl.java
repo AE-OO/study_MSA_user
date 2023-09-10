@@ -121,10 +121,12 @@ public class UserServiceImpl implements UserService{
         // ErrorDecode 를 사용해서 Exception Handling
 //        List<ResponseOrder> ordersList = orderServiceClient.getOrders(userId);
 
+        log.info("Before call orders microsevice");
         CircuitBreaker circuitBreaker = circuitBreakerFactory.create("circuitbreaker");
         // circuitBreaker를 실행시켜서 getOrders 메소드를 호출하고 만약 getOrders의 반환값이 없을 경우 빈 arrayList를 반환함
         List<ResponseOrder> ordersList = circuitBreaker.run(() -> orderServiceClient.getOrders(userId),
                 throwable -> new ArrayList<>());
+        log.info("After call orders microsevice");
 
         userDto.setOrders(ordersList);
 
