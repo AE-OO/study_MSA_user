@@ -43,7 +43,7 @@ public class UserController {
      * Eureka 서버에 등록 상태를 체크함
      */
     @GetMapping("/health_check")
-    @Timed(value = "users.status", longTask = true)
+    @Timed(value = "users.status", longTask = true) // 해당 메소드를 실행하면 metrics에 value 라는 이름으로 등록됨
     public String status(){
 //        return String.format("It's Working in User Service on PORT %s", env.getProperty("local.server.port"));
         return String.format("It's Working on User Service"

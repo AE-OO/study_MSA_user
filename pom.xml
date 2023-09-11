@@ -104,6 +104,8 @@
             <artifactId>spring-cloud-starter-zipkin</artifactId>
             <version>2.2.8.RELEASE</version>
         </dependency>
+
+        <!-- prometheus => metrics를 수집해서 모니터링 및 알람에 사용 -->
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
